@@ -3,4 +3,9 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
        <bean id="myTestBean" class="org.springframework.mock.beans.MyTestBean"/>
+
+       <bean id="getBeanTest" class="org.springframework.mock.beans.lookup.GetBeanTest">
+              <lookup-method name="getBean" bean="teacher"/>
+       </bean>
+       <bean id="teacher" class="org.springframework.mock.beans.lookup.Teacher"/>
 </beans>
