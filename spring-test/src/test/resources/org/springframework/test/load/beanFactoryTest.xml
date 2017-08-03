@@ -8,4 +8,9 @@
               <lookup-method name="getBean" bean="teacher"/>
        </bean>
        <bean id="teacher" class="org.springframework.mock.beans.lookup.Teacher"/>
+
+       <bean id="testChangeMethod" class="org.springframework.mock.beans.replaced.TestChangeMethod">
+              <replaced-method name="changeMe" replacer="replacer"/>
+       </bean>
+       <bean id="replacer" class="org.springframework.mock.beans.replaced.TestMethodReplacer"/>
 </beans>
