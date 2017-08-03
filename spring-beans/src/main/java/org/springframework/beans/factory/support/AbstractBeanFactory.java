@@ -219,6 +219,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	}
 
 	/**
+	 *
+	 *
+	 * 获取bean实例
+	 *
+	 *
 	 * Return an instance, which may be shared or independent, of the specified bean.
 	 * @param name the name of the bean to retrieve
 	 * @param requiredType the required type of the bean to retrieve
@@ -234,6 +239,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			final String name, final Class<T> requiredType, final Object[] args, boolean typeCheckOnly)
 			throws BeansException {
 
+		//拿到beanName
 		final String beanName = transformedBeanName(name);
 		Object bean;
 
