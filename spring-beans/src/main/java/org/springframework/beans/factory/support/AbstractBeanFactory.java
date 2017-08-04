@@ -1553,29 +1553,41 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			Object beanInstance, String name, String beanName, RootBeanDefinition mbd) {
 
 		// Don't let calling code try to dereference the factory if the bean isn't a factory.
+		//如果指定的name是工厂相关（以&为前缀）且beanINstance又不是factoryBean类型 则验证不通过
 		if (BeanFactoryUtils.isFactoryDereference(name) && !(beanInstance instanceof FactoryBean)) {
 			throw new BeanIsNotAFactoryException(transformedBeanName(name), beanInstance.getClass());
 		}
 
-		// Now we have the bean instance, which may be a normal bean or a FactoryBean.
-		// If it's a FactoryBean, we use it to create a bean instance, unless the
+		// Now we have the bean instance, which may be a normal bean or a FactoryBean. 现在我们有了个bean的实例,这个实例可能会是正常的bean或者是factoryBean
+		// If it's a FactoryBean, we use it to create a bean instance, unless the 如果是factoryBean 我们使用它创建实例
+		//但是如果用户想要直接获取工厂实例而不是工厂的getObject方法对应的实例,那么传入的name应该加入前缀&
 		// caller actually wants a reference to the factory.
 		if (!(beanInstance instanceof FactoryBean) || BeanFactoryUtils.isFactoryDereference(name)) {
 			return beanInstance;
 		}
 
+		//加载factoryBean
 		Object object = null;
 		if (mbd == null) {
+			//尝试从缓存中加载bean
 			object = getCachedObjectForFactoryBean(beanName);
 		}
 		if (object == null) {
+			//到这里已经确定beanInstance一定是factoryBean类型
 			// Return bean instance from factory.
 			FactoryBean<?> factory = (FactoryBean<?>) beanInstance;
 			// Caches object obtained from FactoryBean if it is a singleton.
+			//containsBeanDefinition检测beanDefinitionMap中 也就是在所有已经记载的类中检测是否定义beanName
 			if (mbd == null && containsBeanDefinition(beanName)) {
+				//将存储xml配置文件的gernericBeanDefinition转换为rootBeanDefinition
+				//如果指定beanName是子bean的话同时会合并父类的相关属性
 				mbd = getMergedLocalBeanDefinition(beanName);
 			}
+			//是否是用户自定义的
 			boolean synthetic = (mbd != null && mbd.isSynthetic());
+			/**
+			 * 核心处理
+			 */
 			object = getObjectFromFactoryBean(factory, beanName, !synthetic);
 		}
 		return object;
