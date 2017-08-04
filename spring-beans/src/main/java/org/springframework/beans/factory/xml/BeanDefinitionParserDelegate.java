@@ -1453,13 +1453,17 @@ public class BeanDefinitionParserDelegate {
 		return parseCustomElement(ele, null);
 	}
 
+	//containingBd是分类bean 对顶层元素的解析应设置为null
 	public BeanDefinition parseCustomElement(Element ele, BeanDefinition containingBd) {
+		//获取命名空间
 		String namespaceUri = getNamespaceURI(ele);
+		//根据命名空间 找到对应的namespaceHandler
 		NamespaceHandler handler = this.readerContext.getNamespaceHandlerResolver().resolve(namespaceUri);
 		if (handler == null) {
 			error("Unable to locate Spring NamespaceHandler for XML schema namespace [" + namespaceUri + "]", ele);
 			return null;
 		}
+		//调用自定义的namespaceHandler进行解析
 		return handler.parse(ele, new ParserContext(this.readerContext, this, containingBd));
 	}
 
