@@ -1,16 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:c="http://www.syj.org/schema/user"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.syj.org/schema/user http://www.syj.org/schema/user.xsd">
+       <!--普通测试-->
        <bean id="myTestBean" class="org.springframework.mock.beans.MyTestBean"/>
 
+       <!--lookup属性测试-->
        <bean id="getBeanTest" class="org.springframework.mock.beans.lookup.GetBeanTest">
               <lookup-method name="getBean" bean="teacher"/>
        </bean>
        <bean id="teacher" class="org.springframework.mock.beans.lookup.Teacher"/>
 
+       <!--replaced method属性测试-->
        <bean id="testChangeMethod" class="org.springframework.mock.beans.replaced.TestChangeMethod">
               <replaced-method name="changeMe" replacer="replacer"/>
        </bean>
        <bean id="replacer" class="org.springframework.mock.beans.replaced.TestMethodReplacer"/>
+
+       <!-- 自定义标签测试 -->
+       <c:user id="testBean" userName="james" email="james@gmail.com"/>
 </beans>
