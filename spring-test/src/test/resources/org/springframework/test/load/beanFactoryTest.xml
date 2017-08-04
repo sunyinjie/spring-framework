@@ -21,4 +21,9 @@
 
        <!-- 自定义标签测试 -->
        <c:user id="testBean" userName="james" email="james@gmail.com"/>
+
+       <!--factoryBean测试-->
+       <bean id="carFBean" class="org.springframework.mock.beans.factory.CarFactoryBean">
+              <property name="carInfo" value="超级跑车,400,2000000"/>
+       </bean>
 </beans>
