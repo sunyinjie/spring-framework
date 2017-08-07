@@ -1,5 +1,6 @@
 package org.springframework.test.load;
 
+import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -13,4 +14,9 @@ public class BaseTest {
         ApplicationContext bf = new ClassPathXmlApplicationContext(XML_PATH);
         return bf;
     }
+
+/*    @Test
+    public void testInstantiateClass() {
+
+    }*/
 }
