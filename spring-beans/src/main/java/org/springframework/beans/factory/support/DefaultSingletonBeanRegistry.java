@@ -288,9 +288,13 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 */
 	protected void removeSingleton(String beanName) {
 		synchronized (this.singletonObjects) {
+			// 移除单利bean 实例
 			this.singletonObjects.remove(beanName);
+			// 从单例工厂中移除bean 工厂
 			this.singletonFactories.remove(beanName);
+			// 从预实例缓存中移除
 			this.earlySingletonObjects.remove(beanName);
+			// 从单例注册器中移除
 			this.registeredSingletons.remove(beanName);
 		}
 	}
@@ -518,15 +522,19 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		if (logger.isDebugEnabled()) {
 			logger.debug("Destroying singletons in " + this);
 		}
+		// 对单利bean cache加锁,设置销毁标志=true
 		synchronized (this.singletonObjects) {
 			this.singletonsCurrentlyInDestruction = true;
 		}
 
 		String[] disposableBeanNames;
+		// 对要销毁的bean map加锁
 		synchronized (this.disposableBeans) {
+			// 获取所有需要销毁的bean name
 			disposableBeanNames = StringUtils.toStringArray(this.disposableBeans.keySet());
 		}
 		for (int i = disposableBeanNames.length - 1; i >= 0; i--) {
+			// loop 销毁bean
 			destroySingleton(disposableBeanNames[i]);
 		}
 

@@ -121,9 +121,11 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		// then ultimately reset this.delegate back to its original (parent) reference.
 		// this behavior emulates a stack of delegates without actually necessitating one.
 		BeanDefinitionParserDelegate parent = this.delegate;
+		// delegate用来处理嵌套标签
 		this.delegate = createDelegate(getReaderContext(), root, parent);
-
+		// 默认的命名空间
 		if (this.delegate.isDefaultNamespace(root)) {
+			// 检查profile属性
 			String profileSpec = root.getAttribute(PROFILE_ATTRIBUTE);
 			if (StringUtils.hasText(profileSpec)) {
 				String[] specifiedProfiles = StringUtils.tokenizeToStringArray(

@@ -58,6 +58,7 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 	 * @param parent the parent context
 	 */
 	public AbstractXmlApplicationContext(ApplicationContext parent) {
+		// 进父类
 		super(parent);
 	}
 
@@ -89,7 +90,9 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 
 		// Allow a subclass to provide custom initialization of the reader,
 		// then proceed with actually loading the bean definitions.
+		// 初始化bean definition reader 默认允许校验
 		initBeanDefinitionReader(beanDefinitionReader);
+		// 读取配置文件
 		loadBeanDefinitions(beanDefinitionReader);
 	}
 
