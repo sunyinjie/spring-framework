@@ -485,30 +485,41 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
+				// 允许子类在所有的bean初始化前注册beanPostProcessor 默认空实现
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
+				// 允许在bean初始化前改变其值,只执行实现了ordered或者priorityOrdered接口的beanFactoryPostProcessor
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
+				// 注册beanFactoryProcessor,实际上就是在beanDefinition中寻找beanPostProcessor
+				// 之后调用beanFactory.addBeanPostProcessor方法,保存在一个list中
+				// 此时也有优先级的概念,优先级高的在前面
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
+				// 初始化国际化支持
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
+				// 事件驱动
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
+				// 允许bean在初始化前进行定制化操作，默认空实现
 				onRefresh();
 
 				// Check for listener beans and register them.
+				// 注册监听器
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
+				// 单例初始化
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
+				// 发布事件
 				finishRefresh();
 			}
 
@@ -582,11 +593,15 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		// Tell the internal bean factory to use the context's class loader etc.
 		beanFactory.setBeanClassLoader(getClassLoader());
+		// spel表达式解析器
 		beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
+		// 资源编辑器 ,它可以将配置文件中的值从字符串形式转换成相应的格式
 		beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
 
 		// Configure the bean factory with context callbacks.
+		// 环境注入
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
+		// 依赖解析忽略 设置哪些接口在进行依赖注入时 应该被忽略
 		beanFactory.ignoreDependencyInterface(ResourceLoaderAware.class);
 		beanFactory.ignoreDependencyInterface(ApplicationEventPublisherAware.class);
 		beanFactory.ignoreDependencyInterface(MessageSourceAware.class);
@@ -595,6 +610,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// BeanFactory interface not registered as resolvable type in a plain factory.
 		// MessageSource registered (and found for autowiring) as a bean.
+		// bean伪装 有些对象不再beanFactory中,但是我们也想让它们可以被装配,这就要伪装一下
+		// 伪装关系存在Map<Class<?>, Object>
 		beanFactory.registerResolvableDependency(BeanFactory.class, beanFactory);
 		beanFactory.registerResolvableDependency(ResourceLoader.class, this);
 		beanFactory.registerResolvableDependency(ApplicationEventPublisher.class, this);

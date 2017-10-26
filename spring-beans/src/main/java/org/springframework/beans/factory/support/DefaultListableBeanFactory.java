@@ -818,7 +818,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 
 		BeanDefinition oldBeanDefinition;
-		//todo beanDefinitionMap是全局变量 这里不是应该有并发访问 需要在设置同步的吗？
+		//beanDefinitionMap是全局变量 这里不是应该有并发访问 需要在设置同步的吗？
+		//不需要同步 beanDefinitionMap是currenthashmap
 		oldBeanDefinition = this.beanDefinitionMap.get(beanName);
 		//处理注册已经注册的beanName的情况
 		if (oldBeanDefinition != null) {
