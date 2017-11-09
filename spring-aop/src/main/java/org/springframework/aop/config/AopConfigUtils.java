@@ -79,6 +79,7 @@ public abstract class AopConfigUtils {
 	}
 
 	public static BeanDefinition registerAspectJAutoProxyCreatorIfNecessary(BeanDefinitionRegistry registry, Object source) {
+		// 入口就是它 AspectJAwareAdvisorAutoProxyCreator 一切代理子类生成靠的就是它了~~~~~~~~
 		return registerOrEscalateApcAsRequired(AspectJAwareAdvisorAutoProxyCreator.class, registry, source);
 	}
 

@@ -100,7 +100,7 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 		CompositeComponentDefinition compositeDef =
 				new CompositeComponentDefinition(element.getTagName(), parserContext.extractSource(element));
 		parserContext.pushContainingComponent(compositeDef);
-
+		// 是否生成代理类
 		configureAutoProxyCreator(parserContext, element);
 
 		List<Element> childElts = DomUtils.getChildElements(element);
@@ -132,6 +132,7 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 	}
 
 	/**
+	 * advisor标签解析套路和point大同小异
 	 * Parses the supplied {@code &lt;advisor&gt;} element and registers the resulting
 	 * {@link org.springframework.aop.Advisor} and any resulting {@link org.springframework.aop.Pointcut}
 	 * with the supplied {@link BeanDefinitionRegistry}.
@@ -149,7 +150,7 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 			else {
 				advisorBeanName = parserContext.getReaderContext().registerWithGeneratedName(advisorDef);
 			}
-
+			// 对pointcut的解析可以进去看一下
 			Object pointcut = parsePointcutProperty(advisorElement, parserContext);
 			if (pointcut instanceof BeanDefinition) {
 				advisorDef.getPropertyValues().add(POINTCUT, pointcut);
@@ -157,6 +158,8 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 						new AdvisorComponentDefinition(advisorBeanName, advisorDef, (BeanDefinition) pointcut));
 			}
 			else if (pointcut instanceof String) {
+				// 如果配置的是pointcut-ref属性,返回了value后,在这里处理
+				// 生成一个RuntimeBeanReference对象指向原ponitcut的引用
 				advisorDef.getPropertyValues().add(POINTCUT, new RuntimeBeanReference((String) pointcut));
 				parserContext.registerComponent(
 						new AdvisorComponentDefinition(advisorBeanName, advisorDef));
@@ -230,7 +233,7 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 					beanDefinitions.add(advisorDefinition);
 				}
 			}
-
+			// aspect标签解析生成beanDefinition的实现在这儿
 			AspectComponentDefinition aspectComponentDefinition = createAspectComponentDefinition(
 					aspectElement, aspectId, beanDefinitions, beanReferences, parserContext);
 			parserContext.pushContainingComponent(aspectComponentDefinition);
@@ -250,8 +253,9 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 	private AspectComponentDefinition createAspectComponentDefinition(
 			Element aspectElement, String aspectId, List<BeanDefinition> beanDefs,
 			List<BeanReference> beanRefs, ParserContext parserContext) {
-
+		//
 		BeanDefinition[] beanDefArray = beanDefs.toArray(new BeanDefinition[beanDefs.size()]);
+		//
 		BeanReference[] beanRefArray = beanRefs.toArray(new BeanReference[beanRefs.size()]);
 		Object source = parserContext.extractSource(aspectElement);
 		return new AspectComponentDefinition(aspectId, beanDefArray, beanRefArray, source);
@@ -438,15 +442,19 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 		AbstractBeanDefinition pointcutDefinition = null;
 
 		try {
+			// pointcut 入栈
 			this.parseState.push(new PointcutEntry(id));
+			// 生成beanDefinition
 			pointcutDefinition = createPointcutDefinition(expression);
 			pointcutDefinition.setSource(parserContext.extractSource(pointcutElement));
 
 			String pointcutBeanName = id;
 			if (StringUtils.hasText(pointcutBeanName)) {
+				// 设置id
 				parserContext.getRegistry().registerBeanDefinition(pointcutBeanName, pointcutDefinition);
 			}
 			else {
+				// 如果没配置id属性，则自动生成id
 				pointcutBeanName = parserContext.getReaderContext().registerWithGeneratedName(pointcutDefinition);
 			}
 
@@ -454,6 +462,7 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 					new PointcutComponentDefinition(pointcutBeanName, pointcutDefinition, expression));
 		}
 		finally {
+			// pointcut 出栈
 			this.parseState.pop();
 		}
 
@@ -475,12 +484,14 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 		}
 		else if (element.hasAttribute(POINTCUT)) {
 			// Create a pointcut for the anonymous pc and register it.
+			// 如果是ponitcut属性, 和解析ponitcut标签一样,生成一个AspectJExpressionPointcut类型的的beanDefinition
 			String expression = element.getAttribute(POINTCUT);
 			AbstractBeanDefinition pointcutDefinition = createPointcutDefinition(expression);
 			pointcutDefinition.setSource(parserContext.extractSource(element));
 			return pointcutDefinition;
 		}
 		else if (element.hasAttribute(POINTCUT_REF)) {
+			// 如果是ponitcut-ref属性 直接返回value 在外层处理
 			String pointcutRef = element.getAttribute(POINTCUT_REF);
 			if (!StringUtils.hasText(pointcutRef)) {
 				parserContext.getReaderContext().error(
@@ -502,9 +513,12 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 	 * the supplied pointcut expression.
 	 */
 	protected AbstractBeanDefinition createPointcutDefinition(String expression) {
+		// class=AspectJExpressionPointcut
 		RootBeanDefinition beanDefinition = new RootBeanDefinition(AspectJExpressionPointcut.class);
+		// scope=原型
 		beanDefinition.setScope(BeanDefinition.SCOPE_PROTOTYPE);
 		beanDefinition.setSynthetic(true);
+		// expression属性
 		beanDefinition.getPropertyValues().add(EXPRESSION, expression);
 		return beanDefinition;
 	}
