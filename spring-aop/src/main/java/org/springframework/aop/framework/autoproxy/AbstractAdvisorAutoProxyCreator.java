@@ -64,8 +64,16 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	}
 
 
+	/**
+	 * 去容器中寻找适合当前bean的Advisor
+	 * @param beanClass the class of the bean to advise
+	 * @param beanName the name of the bean
+	 * @param targetSource
+	 * @return
+	 */
 	@Override
 	protected Object[] getAdvicesAndAdvisorsForBean(Class<?> beanClass, String beanName, TargetSource targetSource) {
+		// 注意这里
 		List<Advisor> advisors = findEligibleAdvisors(beanClass, beanName);
 		if (advisors.isEmpty()) {
 			return DO_NOT_PROXY;
@@ -84,10 +92,24 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 * @see #extendAdvisors
 	 */
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
+		// 先去容器找出所有实现了Advisor接口的bean
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
+		/**
+		 * 逐一判断Advisor是否适用于当前bean
+		 * 如果Advisor是IntroductionAdvisor，那么判断其ClassFilter是否可以匹配bean的类.
+		 * 如果Advisor是PointcutAdvisor，那么首先进行ClassFilter匹配，
+		 *   如果匹配失败，那么再获得Advisor的MethodMatcher对象，如果MethodMatcher可以匹配任意方法，那么返回true，
+		 *   否则反射获取给定bean的所有方法逐一进行匹配，只要有一个匹配成功，即返回true.
+		 *
+		 * 对于spring事务来说，我们有唯一的Advisor: BeanFactoryTransactionAttributeSourceAdvisor
+		 * BeanFactoryTransactionAttributeSourceAdvisor其实是一个PointcutAdvisor，所以是否可以匹配取决于其Pointcut
+		 * 此Advisor的pointcut是一个TransactionAttributeSourcePointcut对象
+		 * Pointcut的核心在于其ClassFilter和MethodMatcher
+		 */
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
 		extendAdvisors(eligibleAdvisors);
 		if (!eligibleAdvisors.isEmpty()) {
+			// 根据@orderred排序
 			eligibleAdvisors = sortAdvisors(eligibleAdvisors);
 		}
 		return eligibleAdvisors;

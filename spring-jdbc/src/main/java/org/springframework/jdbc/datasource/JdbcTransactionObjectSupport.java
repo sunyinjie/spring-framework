@@ -107,6 +107,7 @@ public abstract class JdbcTransactionObjectSupport implements SavepointManager, 
 				throw new NestedTransactionNotSupportedException(
 						"Cannot create a nested transaction because savepoints are not supported by your JDBC driver");
 			}
+			// 创建提交点 Savepoint由java SQL标准定义，具体实现由数据库完成
 			return conHolder.createSavepoint();
 		}
 		catch (SQLException ex) {

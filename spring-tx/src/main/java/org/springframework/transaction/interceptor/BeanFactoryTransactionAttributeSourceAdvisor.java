@@ -24,6 +24,8 @@ import org.springframework.aop.support.AbstractBeanFactoryPointcutAdvisor;
  * Advisor driven by a {@link TransactionAttributeSource}, used to include
  * a transaction advice bean for methods that are transactional.
  *
+ * spring事务来说，我们有唯一的Advisor
+ *
  * @author Juergen Hoeller
  * @since 2.5.5
  * @see #setAdviceBeanName

@@ -147,6 +147,11 @@ public abstract class TransactionSynchronizationManager {
 	 * Actually check the value of the resource that is bound for the given key.
 	 */
 	private static Object doGetResource(Object actualKey) {
+		// actualKey实际上是DataSource对象，resources是一个ThreadLocal对象
+		/**
+		 * 从这里可以得出结论:
+		 * 是否存在事务指的是在当前线程、当前数据源(DataSource)中是否存在处于活动状态的事务。
+		 */
 		Map<Object, Object> map = resources.get();
 		if (map == null) {
 			return null;
@@ -223,6 +228,7 @@ public abstract class TransactionSynchronizationManager {
 	}
 
 	/**
+	 * 所谓的事务挂起其实就是一个移除当前线程、数据源活动事务对象的过程
 	 * Actually remove the value of the resource that is bound for the given key.
 	 */
 	private static Object doUnbindResource(Object actualKey) {

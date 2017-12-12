@@ -33,6 +33,8 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
  * in combination with the {@code &lt;tx:annotation-driven&gt;} element.
  * Both approached are detailed to great extent in the Spring reference manual.
  *
+ * spring 事务处理器
+ * 事务的本质其实是对数据库自动提交的关闭与开启，传播特性是Spring提出、实现、控制的概念，而隔离级别是对数据库实现的封装
  * @author Rob Harrop
  * @author Juergen Hoeller
  * @since 2.0
@@ -53,6 +55,7 @@ public class TxNamespaceHandler extends NamespaceHandlerSupport {
 	@Override
 	public void init() {
 		registerBeanDefinitionParser("advice", new TxAdviceBeanDefinitionParser());
+        // 解析器入口
 		registerBeanDefinitionParser("annotation-driven", new AnnotationDrivenBeanDefinitionParser());
 		registerBeanDefinitionParser("jta-transaction-manager", new JtaTransactionManagerBeanDefinitionParser());
 	}

@@ -154,6 +154,7 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 	public Object proceed() throws Throwable {
 		//	We start with an index of -1 and increment early.
 		if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
+			// 拦截器执行完毕，调用原本的方法
 			return invokeJoinpoint();
 		}
 
@@ -176,6 +177,9 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 		else {
 			// It's an interceptor, so we just invoke it: The pointcut will have
 			// been evaluated statically before this object was constructed.
+			// 调用拦截器的invoke方法
+			// 这其实是一个逐个调用拦截器的invoke方法，最终调用原本方法(被代理方法)的过程
+			// 所以，事务添加的核心逻辑(入口)在TransactionInterceptor的invoke方法
 			return ((MethodInterceptor) interceptorOrInterceptionAdvice).invoke(this);
 		}
 	}

@@ -75,6 +75,12 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 		throw new UnknownAdviceTypeException(advice);
 	}
 
+	/**
+	 * 根据Spring的定义，Advice可以是一个MethodInterceptor，也可以是类似于Aspectj的before, after通知
+	 * @param advisor Advisor to find an interceptor for
+	 * @return
+	 * @throws UnknownAdviceTypeException
+	 */
 	@Override
 	public MethodInterceptor[] getInterceptors(Advisor advisor) throws UnknownAdviceTypeException {
 		List<MethodInterceptor> interceptors = new ArrayList<MethodInterceptor>(3);
@@ -83,6 +89,12 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 			interceptors.add((MethodInterceptor) advice);
 		}
 		for (AdvisorAdapter adapter : this.adapters) {
+			/**
+			 * AdvisorAdapter接口用以支持用户自定义的Advice类型，并将自定义的类型转为拦截器。
+			 * 默认adapters含有MethodBeforeAdviceAdapter、AfterReturningAdviceAdapter和ThrowsAdviceAdapter三种类型，
+			 * 用以分别支持MethodBeforeAdvice、AfterReturningAdvice和ThrowsAdvice
+			 * 对于BeanFactoryTransactionAttributeSourceAdvisor来说，有且只有一个拦截器: TransactionInterceptor.用于spring-tx的pointcut织入
+			 */
 			if (adapter.supportsAdvice(advice)) {
 				interceptors.add(adapter.getInterceptor(advisor));
 			}

@@ -179,6 +179,7 @@ public class DefaultTransactionStatus extends AbstractTransactionStatus {
 			throw new NestedTransactionNotSupportedException(
 				"Transaction object [" + getTransaction() + "] does not support savepoints");
 		}
+		// SavepointManager实际上从Transaction强转而来，Transaction在Spring都是用Object引用的
 		return (SavepointManager) getTransaction();
 	}
 

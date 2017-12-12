@@ -269,10 +269,12 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		// If the transaction attribute is null, the method is non-transactional.
 		final TransactionAttribute txAttr = getTransactionAttributeSource().getTransactionAttribute(method, targetClass);
 		final PlatformTransactionManager tm = determineTransactionManager(txAttr);
+		// 得到方法名
 		final String joinpointIdentification = methodIdentification(method, targetClass);
 
 		if (txAttr == null || !(tm instanceof CallbackPreferringPlatformTransactionManager)) {
 			// Standard transaction demarcation with getTransaction and commit/rollback calls.
+			// createTransactionIfNecessary是在逻辑执行前开启事务
 			TransactionInfo txInfo = createTransactionIfNecessary(tm, txAttr, joinpointIdentification);
 			Object retVal = null;
 			try {
@@ -301,6 +303,8 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 							public Object doInTransaction(TransactionStatus status) {
 								TransactionInfo txInfo = prepareTransactionInfo(tm, txAttr, joinpointIdentification, status);
 								try {
+									// invocation.proceedWithInvocation()便是我们的逻辑
+									// 而createTransactionIfNecessary便是在逻辑执行前开启事务
 									return invocation.proceedWithInvocation();
 								}
 								catch (Throwable ex) {
@@ -347,13 +351,17 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 	/**
 	 * Determine the specific transaction manager to use for the given transaction.
+	 * 确定使用的事务管理器
 	 */
 	protected PlatformTransactionManager determineTransactionManager(TransactionAttribute txAttr) {
 		// Do not attempt to lookup tx manager if no tx attributes are set
+		// 如果没有事务属性，那么仅从缓存中查找，找不到返回null
 		if (txAttr == null || this.beanFactory == null) {
 			return getTransactionManager();
 		}
 		String qualifier = txAttr.getQualifier();
+		// 如果@Transactional注解配置了transactionManager或value属性(用以决定使用哪个事务管理器):
+		// 首先查找缓存，找不到再去容器中按名称寻找
 		if (StringUtils.hasText(qualifier)) {
 			return determineQualifiedTransactionManager(qualifier);
 		}
@@ -361,6 +369,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			return determineQualifiedTransactionManager(this.transactionManagerBeanName);
 		}
 		else {
+			// 去容器中按类型(Class)查找
 			PlatformTransactionManager defaultTransactionManager = getTransactionManager();
 			if (defaultTransactionManager == null) {
 				defaultTransactionManager = this.beanFactory.getBean(PlatformTransactionManager.class);
@@ -423,6 +432,8 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		TransactionStatus status = null;
 		if (txAttr != null) {
 			if (tm != null) {
+				// 核心逻辑
+				// getTransaction方法返回的是一个TransactionStatus对象，被挂起的事务的各种状态都被保存在此对象中
 				status = tm.getTransaction(txAttr);
 			}
 			else {
@@ -432,6 +443,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				}
 			}
 		}
+		// 核心逻辑
 		return prepareTransactionInfo(tm, txAttr, joinpointIdentification, status);
 	}
 

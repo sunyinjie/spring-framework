@@ -174,11 +174,16 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 		return getDataSource();
 	}
 
+	/**
+	 * 核心逻辑在TransactionSynchronizationManager.doGetResource
+	 * @return
+	 */
 	@Override
 	protected Object doGetTransaction() {
 		DataSourceTransactionObject txObject = new DataSourceTransactionObject();
 		txObject.setSavepointAllowed(isNestedTransactionAllowed());
 		ConnectionHolder conHolder =
+				// 核心逻辑
 				(ConnectionHolder) TransactionSynchronizationManager.getResource(this.dataSource);
 		txObject.setConnectionHolder(conHolder, false);
 		return txObject;
@@ -192,9 +197,13 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 
 	/**
 	 * This implementation sets the isolation level but ignores the timeout.
+	 * 创建新事务
+	 * 结论:
+	 * Spring事务的开启实际上是将数据库的自动提交设为false
 	 */
 	@Override
 	protected void doBegin(Object transaction, TransactionDefinition definition) {
+		// 此时，txObject不为null，只是其核心的ConnectHolder属性为null connectHolder存的是一个数据库连接对象
 		DataSourceTransactionObject txObject = (DataSourceTransactionObject) transaction;
 		Connection con = null;
 
@@ -205,12 +214,13 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 				if (logger.isDebugEnabled()) {
 					logger.debug("Acquired Connection [" + newCon + "] for JDBC transaction");
 				}
+				// 获得连接，可以看出ConnectionHolder是对Connection的包装
 				txObject.setConnectionHolder(new ConnectionHolder(newCon), true);
 			}
 
 			txObject.getConnectionHolder().setSynchronizedWithTransaction(true);
 			con = txObject.getConnectionHolder().getConnection();
-
+			// 设置是否只读和隔离级别
 			Integer previousIsolationLevel = DataSourceUtils.prepareConnectionForTransaction(con, definition);
 			txObject.setPreviousIsolationLevel(previousIsolationLevel);
 
@@ -249,6 +259,12 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 	@Override
 	protected Object doSuspend(Object transaction) {
 		DataSourceTransactionObject txObject = (DataSourceTransactionObject) transaction;
+		/**
+		 * 事务挂起的玄机在此行
+		 * 因为一个ConnectionHolder对象就代表了一个数据库连接，
+		 * 将ConnectionHolder设为null就意味着我们下次要使用连接时，
+		 * 将重新从连接池获取，而新的连接的自动提交是为true的
+		 */
 		txObject.setConnectionHolder(null);
 		ConnectionHolder conHolder = (ConnectionHolder)
 				TransactionSynchronizationManager.unbindResource(this.dataSource);

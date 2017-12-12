@@ -57,6 +57,7 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 	 */
 	@Override
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
+		// 用于向Spring容器注册TransactionalEventListener工厂，TransactionalEventListener是Spring4.2引入的新特性，允许我们自定义监听器监听事务的提交或其它动作。
 		registerTransactionalEventListenerFactory(parserContext);
 		String mode = element.getAttribute("mode");
 		if ("aspectj".equals(mode)) {
@@ -65,6 +66,12 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 		}
 		else {
 			// mode="proxy"
+			/**
+			 * 主要组件注册
+			 * 此方法的最终作用便是在Spring容器中加入这样的bean结构:
+			 * BeanFactoryTransactionAttributeSourceAdvisor->TransactionInterceptor->AnnotationTransactionAttributeSource
+			 * 其中AnnotationTransactionAttributeSource用于解析@Transactional注解的相关属性。
+			 */
 			AopAutoProxyConfigurer.configureAutoProxyCreator(element, parserContext);
 		}
 		return null;
